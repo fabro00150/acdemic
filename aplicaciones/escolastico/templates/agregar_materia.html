@@ -1,20 +1,120 @@
 {% extends "inicio.html" %}
 
-{% block title %}Agregar Materia{% endblock %}
+{% block title %}Materias{% endblock %}
 
 {% block content %}
-<h1>Agregar Materia</h1>
-<form method="POST">
-    {% csrf_token %}
-    <label>Nombre:</label>
-    <input type="text" name="nombre" required><br>
-    <label>Código:</label>
-    <input type="text" name="codigo" required><br>
-    <label>Docentes:</label><br>
-    {% for docente in docentes %}
-        <input type="checkbox" name="docentes" value="{{ docente.id }}">
-        {{ docente.nombre }} {{ docente.apellido }}<br>
-    {% endfor %}
-    <button type="submit">Guardar</button>
-</form>
+<h1>Materias</h1>
+
+<!-- Botón para abrir el modal -->
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#materiaModal">Agregar Materia</button>
+
+<!-- Tabla de Materias -->
+<table class="table table-bordered mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Código</th>
+            <th>Docentes</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody id="materias-tbody">
+        {% for materia in materias %}
+        <tr>
+            <td>{{ materia.id }}</td>
+            <td>{{ materia.nombre }}</td>
+            <td>{{ materia.codigo }}</td>
+            <td>
+                {% for docente in materia.docentes.all %}
+                    {{ docente.nombre }} {{ docente.apellido }}<br>
+                {% endfor %}
+            </td>
+            <td>
+                <button class="btn btn-warning btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#materiaModal"
+                        data-id="{{ materia.id }}"
+                        data-nombre="{{ materia.nombre }}"
+                        data-codigo="{{ materia.codigo }}"
+                        data-docentes="{{ materia.docentes.all|join:',' }}">
+                    Editar
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="materiaModal" tabindex="-1" aria-labelledby="materiaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="materiaModalLabel">Agregar Materia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="materia-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="materia_id" id="materia-id">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required><br>
+
+                    <label for="codigo">Código:</label>
+                    <input type="text" id="codigo" name="codigo" class="form-control" required><br>
+
+                    <label>Docentes:</label><br>
+                    {% for docente in docentes %}
+                        <input type="checkbox" class="docente-checkbox" name="docentes" value="{{ docente.id }}">
+                        {{ docente.nombre }} {{ docente.apellido }}<br>
+                    {% endfor %}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="save-changes" class="btn btn-primary">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
+<script>
+    document.getElementById('materiaModal').addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id') || '';
+        const nombre = button.getAttribute('data-nombre') || '';
+        const codigo = button.getAttribute('data-codigo') || '';
+        const docentes = button.getAttribute('data-docentes') ? button.getAttribute('data-docentes').split(',') : [];
+
+        document.getElementById('materia-id').value = id;
+        document.getElementById('nombre').value = nombre;
+        document.getElementById('codigo').value = codigo;
+
+        document.querySelectorAll('.docente-checkbox').forEach(checkbox => {
+            checkbox.checked = docentes.includes(checkbox.value);
+        });
+    });
+
+    document.getElementById('save-changes').addEventListener('click', () => {
+        const form = document.getElementById('materia-form');
+        const formData = new FormData(form);
+
+        fetch("/agregar_editar_materia/", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            iziToast[data.status]({ title: data.message, position: 'topRight' });
+            if (data.status === "success") {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            iziToast.error({ title: "Error al procesar la solicitud", position: 'topRight' });
+        });
+    });
+</script>
 {% endblock %}

@@ -1,23 +1,129 @@
 {% extends "inicio.html" %}
 
-{% block title %}Agregar Estudiante{% endblock %}
+{% block title %}Estudiantes{% endblock %}
 
 {% block content %}
-<h1>Agregar Estudiante</h1>
-<form method="POST">
-    {% csrf_token %}
-    <label>Nombre:</label>
-    <input type="text" name="nombre" required><br>
-    <label>Apellido:</label>
-    <input type="text" name="apellido" required><br>
-    <label>Matrícula:</label>
-    <input type="text" name="matricula" required><br>
-    <label>Materias:</label>
-    <select name="materias" multiple>
-        {% for materia in materias %}
-        <option value="{{ materia.id }}">{{ materia.nombre }}</option>
+<h1>Estudiantes</h1>
+
+<!-- Botón para abrir el modal -->
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#estudianteModal">Agregar Estudiante</button>
+
+<!-- Tabla de Estudiantes -->
+<table class="table table-bordered mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Matrícula</th>
+            <th>Materias</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for estudiante in estudiantes %}
+        <tr>
+            <td>{{ estudiante.id }}</td>
+            <td>{{ estudiante.nombre }}</td>
+            <td>{{ estudiante.apellido }}</td>
+            <td>{{ estudiante.matricula }}</td>
+            <td>
+                {% for materia in estudiante.materias.all %}
+                {{ materia.nombre }}<br>
+                {% endfor %}
+            </td>
+            <td>
+                <button class="btn btn-warning btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#estudianteModal"
+                        data-id="{{ estudiante.id }}"
+                        data-nombre="{{ estudiante.nombre }}"
+                        data-apellido="{{ estudiante.apellido }}"
+                        data-matricula="{{ estudiante.matricula }}"
+                        data-materias="{{ estudiante.materias.all|join:',' }}">
+                    Editar
+                </button>
+            </td>
+        </tr>
         {% endfor %}
-    </select><br>
-    <button type="submit">Guardar</button>
-</form>
+    </tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="estudianteModal" tabindex="-1" aria-labelledby="estudianteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="estudianteModalLabel">Agregar Estudiante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="estudiante-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="estudiante_id" id="estudiante-id">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required><br>
+
+                    <label for="apellido">Apellido:</label>
+                    <input type="text" id="apellido" name="apellido" class="form-control" required><br>
+
+                    <label for="matricula">Matrícula:</label>
+                    <input type="text" id="matricula" name="matricula" class="form-control" required><br>
+
+                    <label>Materias:</label><br>
+                    {% for materia in materias %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="materia-{{ materia.id }}" name="materias" value="{{ materia.id }}">
+                        <label class="form-check-label" for="materia-{{ materia.id }}">{{ materia.nombre }}</label>
+                    </div>
+                    {% endfor %}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="save-changes" class="btn btn-primary">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('estudianteModal').addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id') || '';
+        const nombre = button.getAttribute('data-nombre') || '';
+        const apellido = button.getAttribute('data-apellido') || '';
+        const matricula = button.getAttribute('data-matricula') || '';
+        const materias = button.getAttribute('data-materias') ? button.getAttribute('data-materias').split(',') : [];
+
+        document.getElementById('estudiante-id').value = id;
+        document.getElementById('nombre').value = nombre;
+        document.getElementById('apellido').value = apellido;
+        document.getElementById('matricula').value = matricula;
+
+        document.querySelectorAll('#materias input').forEach(checkbox => {
+            checkbox.checked = materias.includes(checkbox.value);
+        });
+    });
+
+    document.getElementById('save-changes').addEventListener('click', () => {
+        const form = document.getElementById('estudiante-form');
+        const formData = new FormData(form);
+
+        fetch("/agregar_editar_estudiante/", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            iziToast[data.status]({ title: data.message, position: 'topRight' });
+            if (data.status === "success") {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            iziToast.error({ title: "Error al procesar la solicitud", position: 'topRight' });
+        });
+    });
+</script>
 {% endblock %}

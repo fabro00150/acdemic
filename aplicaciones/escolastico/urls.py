@@ -7,7 +7,11 @@ urlpatterns = [
     path('ingresar_calificaciones/<int:materia_id>', views.ingresar_calificaciones),
     path('generar_reportes/<int:materia_id>', views.generar_reportes),
     
-     path("agregar_docente/", views.agregar_docente),
+    path("agregar_docente/", views.agregar_docente),
+    path("dcnts/", views.dcnts, name='dcnts'),
     path("agregar_materia/", views.agregar_materia),
+    path("agregar_editar_materia/", views.agregar_editar_materia),
     path("agregar_estudiante/", views.agregar_estudiante),
+    path("agregar_editar_estudiante/", views.agregar_editar_estudiante),
+    path("eliminar_docente/<int:docente_id>", views.eliminar_docente),
 ]
