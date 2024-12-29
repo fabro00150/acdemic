@@ -1,0 +1,66 @@
+{% extends "inicio.html" %}
+
+{% block title %}Agregar Docente{% endblock %}
+
+{% block content %}
+<h1>Agregar Docente</h1>
+<form method="post">
+    {% csrf_token %}
+    <label for="nombre">Nombre:</label>
+    <input type="text" name="nombre" id="nombre" required><br>
+
+    <label for="apellido">Apellido:</label>
+    <input type="text" name="apellido" id="apellido" required><br>
+
+    <label for="email">Email:</label>
+    <input type="email" name="email" id="email" required><br>
+
+    <button type="submit">Guardar</button>
+</form>
+
+{% if error %}
+<p style="color: red;">{{ error }}</p>
+{% endif %}
+
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Géneros</th>
+            <th>materias</th>
+    </thead>
+    <tbody>
+        {% for docente in docentes %}
+        <tr>            
+            <td>{{ docente.id }}</td>
+            <td>{{ docente.nombre }}</td>
+            <td>{{ docente.email }}</td>
+
+
+        </tr>                    
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Géneros</th>
+    </thead>
+    <tbody>
+        {% for materia in materias %}
+        <tr>            
+            <td>{{ materia.docentes }}</td>
+            <td>{{ materia.nombre }}</td>
+            <td>{{ materia.codigo }}</td>
+
+        </tr>                    
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}

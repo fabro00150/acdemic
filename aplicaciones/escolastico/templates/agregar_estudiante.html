@@ -1,0 +1,23 @@
+{% extends "inicio.html" %}
+
+{% block title %}Agregar Estudiante{% endblock %}
+
+{% block content %}
+<h1>Agregar Estudiante</h1>
+<form method="POST">
+    {% csrf_token %}
+    <label>Nombre:</label>
+    <input type="text" name="nombre" required><br>
+    <label>Apellido:</label>
+    <input type="text" name="apellido" required><br>
+    <label>Matrícula:</label>
+    <input type="text" name="matricula" required><br>
+    <label>Materias:</label>
+    <select name="materias" multiple>
+        {% for materia in materias %}
+        <option value="{{ materia.id }}">{{ materia.nombre }}</option>
+        {% endfor %}
+    </select><br>
+    <button type="submit">Guardar</button>
+</form>
+{% endblock %}

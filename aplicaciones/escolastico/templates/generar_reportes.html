@@ -1,0 +1,19 @@
+<h1>Reporte de {{ materia.nombre }}</h1>
+<table>
+    <tr>
+        <th>Estudiante</th>
+        <th>Asistencias</th>
+        <th>Calificaciones</th>
+    </tr>
+    {% for dato in datos %}
+    <tr>
+        <td>{{ dato.estudiante.nombre }} {{ dato.estudiante.apellido }}</td>
+        <td>{{ dato.asistencias|length }}</td>
+        <td>
+            {% for calificacion in dato.calificaciones %}
+                {{ calificacion.nota }}<br>
+            {% endfor %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>

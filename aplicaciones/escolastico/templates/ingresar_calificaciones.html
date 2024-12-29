@@ -1,0 +1,44 @@
+<h1>Ingresar Calificaciones para {{ materia.nombre }}</h1>
+<form id="calificacionForm" method="POST">
+    {% csrf_token %}
+    <ul>
+        {% for estudiante in estudiantes %}
+            <li>
+                {{ estudiante.nombre }} {{ estudiante.apellido }}
+                Nota: <input type="number" name="calificacion_{{ estudiante.id }}" step="0.01" min="0" max="10">
+            </li>
+        {% endfor %}
+    </ul>
+    <button type="submit">Guardar Calificaciones</button>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('calificacionForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Evita la recarga de la página
+
+            const formData = new FormData(form); // Crea un objeto FormData con los datos del formulario
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest' // Identifica la solicitud como AJAX
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message); // Mensaje en caso de éxito
+                    form.reset(); // Reinicia el formulario
+                } else {
+                    alert('Ocurrió un error al registrar la calificación.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error inesperado.');
+            });
+        });
+    });
+</script>

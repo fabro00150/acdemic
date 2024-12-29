@@ -1,0 +1,48 @@
+
+{% block content %}
+<h1>Registrar Asistencia para {{ materia.nombre }}</h1>
+<form id="asistenciaForm" method="post">
+    {% csrf_token %}
+    Fecha: <input type="date" name="fecha" id="fecha" required><br>
+    <ul>
+        {% for estudiante in estudiantes %}
+            <li>
+                {{ estudiante.nombre }} {{ estudiante.apellido }}
+                <input type="checkbox" name="asistencia_{{ estudiante.id }}"> Presente
+            </li>
+        {% endfor %}
+    </ul>
+    <button type="submit">Registrar Asistencia</button>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('asistenciaForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Evita la recarga de la página
+
+            const formData = new FormData(form); // Crea un objeto FormData con los datos del formulario
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest' // Identifica la solicitud como AJAX
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message); // Mensaje en caso de éxito
+                    form.reset(); // Reinicia el formulario
+                } else {
+                    alert('Ocurrió un error al registrar la asistencia.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error inesperado.');
+            });
+        });
+    });
+</script>
+{% endblock %}

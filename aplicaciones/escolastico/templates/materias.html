@@ -1,0 +1,39 @@
+{% extends 'inicio.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2>Lista de Materias</h2>
+    <a href="/nuevaMateria/" class="btn btn-primary mb-3">Agregar Nueva Materia</a>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Créditos</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for materia in materias %}
+        <tr>
+          <td>{{ materia.nombre }}</td>
+          <td>{{ materia.codigo }}</td>
+          <td>{{ materia.creditos }}</td>
+          <td>{{ materia.descripcion|truncatechars:50 }}</td>
+          <td>
+            <a href="" class="btn btn-primary btn-sm">Editar</a>
+            <form method="post" action="/eliminarMateria/{{ materia.id_materia }}">
+              {% csrf_token %}
+              <button class="btn btn-danger" type="submit" onclick="return confirm('SEGURO? UNA VEZ BORRADO NO HAY VUELTA ATRAS')">
+                  Eliminar
+              </button>
+
+          </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
