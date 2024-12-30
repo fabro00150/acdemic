@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,9 +16,20 @@
 <body>    
     <main>
         {% block content %}
-        <h1>
-            Binevenido a la plataforma de gestion de estudiantes
-        </h1>
+        <div class="d-flex align-items-start" style="position: relative; width: 100%; height: 100vh; overflow: hidden;">
+            <video id="background-video" autoplay loop muted playsinline 
+                style="position: absolute;  width: 100%; height: auto; min-height: 100%;">
+                <source src="{% static 'recursos/vid.mp4' %}" type="video/mp4">
+                Tu navegador no soporta la reproducción de videos.
+            </video>
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; text-align: center; color: white; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);">
+                <div style="background: rgba(0, 0, 0, 0.7); border: none; border-radius: 10px; padding: 20px; max-width: 400px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);">
+                    <h1 style="margin-bottom: 20px;">Bienvenido a la Plataforma Académica</h1>
+                    <p style="margin-bottom: 20px;">Gestiona estudiantes, notas y asistencias de forma eficiente.</p>
+                    <a href="/home/" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Comenzar</a>
+                </div>
+            </div>
+        </div> 
         {% endblock %}
     </main>
     
