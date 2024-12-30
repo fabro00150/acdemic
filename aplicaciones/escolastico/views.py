@@ -8,6 +8,12 @@ def inicio(request):
     materias = Materia.objects.all()
     return render(request, 'inicio.html', {'materias': materias})
 
+def home(request):
+    """Página inicial que muestra las materias disponibles."""
+    materias = Materia.objects.all()
+    return render(request, 'home.html', {'materias': materias})
+
+
 def marcar_asistencia(request, materia_id):
     """Vista para marcar la asistencia de estudiantes de una materia."""
     materia = get_object_or_404(Materia, id=materia_id)
@@ -48,7 +54,7 @@ def ingresar_calificaciones(request, materia_id):
     return render(request, 'ingresar_calificaciones.html', {'materia': materia, 'estudiantes': estudiantes})
 
 def generar_reportes(request, materia_id):
-    """Vista para generar reportes de progreso por estudiante."""
+    """Vista para generar reportes con totales de asistencias, faltas, y promedios de calificaciones."""
     materia = get_object_or_404(Materia, id=materia_id)
     estudiantes = materia.estudiantes.all()
     asistencia = Asistencia.objects.filter(materia=materia)
@@ -56,12 +62,22 @@ def generar_reportes(request, materia_id):
 
     datos = []
     for estudiante in estudiantes:
-        asistencias_estudiante = asistencia.filter(estudiante=estudiante)
-        calificaciones_estudiante = calificaciones.filter(estudiante=estudiante)
+        asistencias_estudiante = asistencia.filter(estudiante=estudiante, presente=True)
+        faltas_estudiante = asistencia.filter(estudiante=estudiante, presente=False)
+        calificaciones_estudiante = calificaciones.filter(estudiante=estudiante).order_by('-id')[:5]  # Últimas 5 notas
+        promedio = (
+            sum(calificacion.nota for calificacion in calificaciones_estudiante) / calificaciones_estudiante.count()
+            if calificaciones_estudiante.exists() else 0
+        )
+
         datos.append({
             'estudiante': estudiante,
-            'asistencias': asistencias_estudiante,
+            'total_asistencias': asistencias_estudiante.count(),
+            'total_faltas': faltas_estudiante.count(),
+            'asistencias': [a.fecha for a in asistencias_estudiante],
+            'faltas': [f.fecha for f in faltas_estudiante],
             'calificaciones': calificaciones_estudiante,
+            'promedio': promedio,
         })
 
     return render(request, 'generar_reportes.html', {'materia': materia, 'datos': datos})
@@ -101,7 +117,20 @@ def eliminar_docente(request, docente_id):
     docente = get_object_or_404(Docente, id=docente_id)
     docente.delete()
     messages.success(request, "Docente eliminado correctamente.")
-    return redirect("inicio")
+    return redirect("home")
+
+
+def eliminarEstudiante(request, estudiante_id):
+    estudiante = get_object_or_404(Estudiante, id=estudiante_id)
+    estudiante.delete()
+    messages.success(request, "Estudiante eliminado correctamente.")
+    return redirect("home")
+
+def eliminarMateria(request, materia_id):
+    materia = get_object_or_404(Materia, id=materia_id)
+    materia.delete()
+    messages.success(request, "materia eliminado correctamente.")
+    return redirect("home")
 
 
 # Agregar materia
@@ -114,7 +143,7 @@ def agregar_materia(request):
         docentes_ids = request.POST.getlist("docentes")  # Obtener IDs de los docentes seleccionados
         materia = Materia.objects.create(nombre=nombre, codigo=codigo)  # Crear materia
         materia.docentes.set(docentes_ids)  # Asociar docentes seleccionados a la materia
-        return redirect("inicio")
+        return redirect("home")
     return render(request, "agregar_materia.html", {"materias": materias,"docentes":docentes})
 
 def agregar_editar_materia(request):
@@ -153,7 +182,7 @@ def agregar_estudiante(request):
                 nombre=nombre, apellido=apellido, matricula=matricula
             )
             estudiante.materias.set(materias_ids)
-            return redirect("inicio")
+            return redirect("home")
 
     return render(
         request,

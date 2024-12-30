@@ -12,41 +12,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Control Académico{% endblock %}</title>
 </head>
-<body>
-    <header>
-        <nav>
-            <a href="/agregar_docente/">Añadir Docente</a>
-            <a href="/agregar_materia/">Añadir Materia</a>
-            <a href="/agregar_estudiante/">Añadir Estudiante</a>
-        </nav>
-    </header>
+<body>    
     <main>
         {% block content %}
-        <h1>Materias</h1>
-        <ul>
-            {% for materia in materias %}
-                <li>
-                    {{ materia.nombre }}
-                    <a href="/marcar_asistencia/{{ materia.id }}">Marcar Asistencia</a>
-                    <a href="/ingresar_calificaciones/{{ materia.id }}">Ingresar Calificaciones</a>
-                    <a href="/generar_reportes/{{ materia.id }}">Generar Reporte</a>
-                </li>
-            {% endfor %}
-        </ul>                
+        <h1>
+            Binevenido a la plataforma de gestion de estudiantes
+        </h1>
         {% endblock %}
     </main>
-    <script>
-        {% if messages %}
-            {% for message in messages %}
-                iziToast.{{ message.tags }}({
-                    title: '{{ message.tags|capfirst }}',
-                    message: '{{ message }}',
-                    position: 'topRight',
-                    timeout: 5000
-                });
-            {% endfor %}
-        {% endif %}
-    </script>
+    
 
 </body>
 </html>

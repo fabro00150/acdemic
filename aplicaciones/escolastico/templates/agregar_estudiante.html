@@ -43,6 +43,12 @@
                         data-materias="{{ estudiante.materias.all|join:',' }}">
                     Editar
                 </button>
+                <form method="post" action="/eliminarEstudiante/{{ estudiante.id }}">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit" onclick="return confirm('SEGURO? UNA VEZ BORRADO NO HAY VUELTA ATRAS')">
+                        Eliminar
+                    </button>
+                </form>
             </td>
         </tr>
         {% endfor %}

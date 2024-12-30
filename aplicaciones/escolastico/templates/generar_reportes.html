@@ -1,19 +1,60 @@
+{% extends "home.html" %}
+
+<a class="btn btn-primary" href="/home/">
+    Regresar
+</a>
 <h1>Reporte de {{ materia.nombre }}</h1>
-<table>
-    <tr>
-        <th>Estudiante</th>
-        <th>Asistencias</th>
-        <th>Calificaciones</th>
-    </tr>
+<table class="table table-dark">
+    <thead>        
+        <tr>
+            <th scope="col">Estudiante</th>
+            <th scope="col">Asistencias</th>
+            <th scope="col">Total Asistencias</th>
+            <th scope="col">Faltas</th>
+            <th scope="col">Total Faltas</th>
+            <th scope="col">Calificaciones</th>
+            <th scope="col">Promedio</th>
+        </tr>
+    </thead>
     {% for dato in datos %}
     <tr>
         <td>{{ dato.estudiante.nombre }} {{ dato.estudiante.apellido }}</td>
-        <td>{{ dato.asistencias|length }}</td>
         <td>
-            {% for calificacion in dato.calificaciones %}
-                {{ calificacion.nota }}<br>
-            {% endfor %}
+            {% if dato.asistencias %}
+                <ul>
+                    {% for fecha in dato.asistencias %}
+                        <li>{{ fecha }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                No hay asistencias registradas
+            {% endif %}
         </td>
+        <td>{{ dato.total_asistencias }}</td>
+        <td>
+            {% if dato.faltas %}
+                <ul>
+                    {% for fecha in dato.faltas %}
+                        <li>{{ fecha }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                No hay faltas registradas
+            {% endif %}
+        </td>
+        <td>{{ dato.total_faltas }}</td>
+        <td>
+            {% if dato.calificaciones %}
+                <ul>
+                    {% for calificacion in dato.calificaciones %}
+                        <li>{{ calificacion.nota }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                No hay calificaciones registradas
+            {% endif %}
+        </td>
+        <td>{{ dato.promedio|floatformat:2 }}</td>
     </tr>
     {% endfor %}
 </table>
