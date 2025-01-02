@@ -35,6 +35,7 @@ def marcar_asistencia(request, materia_id):
     
     return render(request, 'marcar_asistencia.html', {'materia': materia, 'estudiantes': estudiantes})
 
+#INGRESAR CALIFICACIONES
 def ingresar_calificaciones(request, materia_id):
     """Vista para ingresar calificaciones de estudiantes."""
     materia = get_object_or_404(Materia, id=materia_id)
@@ -53,6 +54,36 @@ def ingresar_calificaciones(request, materia_id):
 
     return render(request, 'ingresar_calificaciones.html', {'materia': materia, 'estudiantes': estudiantes})
 
+
+#EDITAR CALIFICACIONES
+def editar_calificaciones(request):
+    if request.method == 'POST':
+        calificacion_id = request.POST.get('calificacion_id')
+        if not calificacion_id:
+            return JsonResponse({'success': False, 'message': 'ID de calificación no recibido.'})
+        nueva_nota = request.POST.get('nueva_nota')
+
+        try:
+            # Validar que la nota sea un número válido
+            nueva_nota = float(nueva_nota)
+            if not (0 <= nueva_nota <= 10):
+                return JsonResponse({'success': False, 'message': 'La nota debe estar entre 0 y 10.'})
+            
+            # Actualizar la calificación
+            calificacion = Calificacion.objects.get(id=calificacion_id)
+            calificacion.nota = nueva_nota
+            calificacion.save()
+            return JsonResponse({'success': True, 'message': 'Calificación actualizada correctamente.'})
+        except Calificacion.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Calificación no encontrada.'})
+        except ValueError:
+            return JsonResponse({'success': False, 'message': 'La nota proporcionada no es válida.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error inesperado: {str(e)}'})
+
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'})
+
+#REPORTES DE MATERIA
 def generar_reportes(request, materia_id):
     """Vista para generar reportes con totales de asistencias, faltas, y promedios de calificaciones."""
     materia = get_object_or_404(Materia, id=materia_id)
@@ -104,7 +135,7 @@ def agregar_docente(request):
             Docente.objects.create(nombre=nombre, apellido=apellido, email=email)
             messages.success(request, "Docente agregado exitosamente.")
 
-        return redirect("dcnts")
+        return render(request,"agregar_docente.html", {"docentes": docentes, "materias": materias})
 
     return render(request, "agregar_docente.html", {"docentes": docentes, "materias": materias})
 
@@ -114,10 +145,12 @@ def dcnts(request):
 
 
 def eliminar_docente(request, docente_id):
+    docentes = Docente.objects.all()
+    materias = Materia.objects.all()
     docente = get_object_or_404(Docente, id=docente_id)
     docente.delete()
     messages.success(request, "Docente eliminado correctamente.")
-    return redirect("home")
+    return render(request,"agregar_docente.html", {"docentes": docentes, "materias": materias})
 
 
 def eliminarEstudiante(request, estudiante_id):
@@ -135,35 +168,64 @@ def eliminarMateria(request, materia_id):
 
 # Agregar materia
 def agregar_materia(request):
-    materias = Materia.objects.all()
+    materias = Materia.objects.all().prefetch_related('docentes', 'estudiantes')
     docentes = Docente.objects.all()
+
     if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        codigo = request.POST.get("codigo")
+        nombre = request.POST.get("nombre", "").strip()
+        codigo = request.POST.get("codigo", "").strip()
         docentes_ids = request.POST.getlist("docentes")  # Obtener IDs de los docentes seleccionados
-        materia = Materia.objects.create(nombre=nombre, codigo=codigo)  # Crear materia
-        materia.docentes.set(docentes_ids)  # Asociar docentes seleccionados a la materia
-        return redirect("home")
-    return render(request, "agregar_materia.html", {"materias": materias,"docentes":docentes})
+
+        # Validar campos obligatorios
+        if not nombre or not codigo:
+            return render(request, "agregar_materia.html", {
+                "materias": materias,
+                "docentes": docentes,
+                "error": "Todos los campos son obligatorios."
+            })
+
+        try:
+            materia = Materia.objects.create(nombre=nombre, codigo=codigo)
+            materia.docentes.set(docentes_ids)
+            return redirect("home")  # Redirigir a la página principal o donde prefieras
+        except Exception as e:
+            return render(request, "agregar_materia.html", {
+                "materias": materias,
+                "docentes": docentes,
+                "error": f"Error al guardar la materia: {str(e)}"
+            })
+
+    return render(request, "agregar_materia.html", {"materias": materias, "docentes": docentes})
 
 def agregar_editar_materia(request):
     if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        codigo = request.POST.get("codigo")
-        docentes_ids = request.POST.getlist("docentes")  # Obtener IDs de los docentes seleccionados
-        
-        if "materia_id" in request.POST:  # Si se recibe un ID, actualizar la materia
-            materia_id = request.POST.get("materia_id")
-            materia = Materia.objects.get(id=materia_id)
-            materia.nombre = nombre
-            materia.codigo = codigo
-            materia.docentes.set(docentes_ids)
-            materia.save()
-            return JsonResponse({"status": "success", "message": "Materia actualizada correctamente"})
-        else:  # Si no hay ID, crear una nueva materia
-            materia = Materia.objects.create(nombre=nombre, codigo=codigo)
-            materia.docentes.set(docentes_ids)
-            return JsonResponse({"status": "success", "message": "Materia creada correctamente"})
+        nombre = request.POST.get("nombre", "").strip()
+        codigo = request.POST.get("codigo", "").strip()
+        docentes_ids = request.POST.getlist("docentes")
+
+        # Validar campos obligatorios
+        if not nombre or not codigo:
+            return JsonResponse({"status": "error", "message": "Todos los campos son obligatorios"})
+
+        materia_id = request.POST.get("materia_id", "").strip()
+
+        try:
+            if materia_id:  # Si se recibe un ID, actualizar la materia
+                materia = Materia.objects.get(id=materia_id)
+                materia.nombre = nombre
+                materia.codigo = codigo
+                materia.docentes.set(docentes_ids)
+                materia.save()
+                return JsonResponse({"status": "success", "message": "Materia actualizada correctamente"})
+            else:  # Si no hay ID, crear una nueva materia
+                materia = Materia.objects.create(nombre=nombre, codigo=codigo)
+                materia.docentes.set(docentes_ids)
+                return JsonResponse({"status": "success", "message": "Materia creada correctamente"})
+        except Materia.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Materia no encontrada"})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": f"Error al procesar la materia: {str(e)}"})
+
     return JsonResponse({"status": "error", "message": "Método no permitido"})
 
 # Añadir estudiante
@@ -172,42 +234,78 @@ def agregar_estudiante(request):
     materias = Materia.objects.all()  # Obtener todas las materias
 
     if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        apellido = request.POST.get("apellido")
-        matricula = request.POST.get("matricula")
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        matricula = request.POST.get("matricula", "").strip()
         materias_ids = request.POST.getlist("materias")
 
-        if nombre and apellido and matricula:  # Validar que los campos no estén vacíos
+        # Validar campos obligatorios
+        if not nombre or not apellido or not matricula:
+            return render(request, "agregar_estudiante.html", {
+                "materias": materias,
+                "estudiantes": estudiantes,
+                "error": "Todos los campos son obligatorios."
+            })
+
+        try:
             estudiante = Estudiante.objects.create(
                 nombre=nombre, apellido=apellido, matricula=matricula
             )
             estudiante.materias.set(materias_ids)
             return redirect("home")
+        except Exception as e:
+            return render(request, "agregar_estudiante.html", {
+                "materias": materias,
+                "estudiantes": estudiantes,
+                "error": f"Error al guardar: {str(e)}"
+            })
 
-    return render(
-        request,
-        "agregar_estudiante.html",
-        {"materias": materias, "estudiantes": estudiantes},
-    )
+    return render(request, "agregar_estudiante.html", {
+        "materias": materias,
+        "estudiantes": estudiantes
+    })
 
 def agregar_editar_estudiante(request):
     if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        apellido = request.POST.get("apellido")
-        matricula = request.POST.get("matricula")
-        materias_ids = request.POST.getlist("materias")  # Obtener IDs de las materias seleccionadas
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        matricula = request.POST.get("matricula", "").strip()
+        materias_ids = request.POST.getlist("materias")
 
-        if "estudiante_id" in request.POST:  # Si se recibe un ID, actualizar el estudiante
-            estudiante_id = request.POST.get("estudiante_id")
-            estudiante = Estudiante.objects.get(id=estudiante_id)
-            estudiante.nombre = nombre
-            estudiante.apellido = apellido
-            estudiante.matricula = matricula
-            estudiante.materias.set(materias_ids)
-            estudiante.save()
-            return JsonResponse({"status": "success", "message": "Estudiante actualizado correctamente"})
-        else:  # Si no hay ID, crear un nuevo estudiante
-            estudiante = Estudiante.objects.create(nombre=nombre, apellido=apellido, matricula=matricula)
-            estudiante.materias.set(materias_ids)
-            return JsonResponse({"status": "success", "message": "Estudiante creado correctamente"})
+        # Validar campos obligatorios
+        if not nombre or not apellido or not matricula:
+            return JsonResponse({"status": "error", "message": "Todos los campos son obligatorios"})
+
+        estudiante_id = request.POST.get("estudiante_id", "").strip()
+
+        if estudiante_id:  # Actualizar estudiante existente
+            try:
+                estudiante = Estudiante.objects.get(id=estudiante_id)
+                estudiante.nombre = nombre
+                estudiante.apellido = apellido
+                estudiante.matricula = matricula
+                estudiante.materias.set(materias_ids)
+                estudiante.save()
+                return JsonResponse({"status": "success", "message": "Estudiante actualizado correctamente"})
+            except Estudiante.DoesNotExist:
+                return JsonResponse({"status": "error", "message": "Estudiante no encontrado"})
+            except Exception as e:
+                return JsonResponse({"status": "error", "message": f"Error al actualizar: {str(e)}"})
+        else:  # Crear nuevo estudiante
+            try:
+                estudiante = Estudiante.objects.create(
+                    nombre=nombre, apellido=apellido, matricula=matricula
+                )
+                estudiante.materias.set(materias_ids)
+                return JsonResponse({"status": "success", "message": "Estudiante creado correctamente"})
+            except Exception as e:
+                return JsonResponse({"status": "error", "message": f"Error al crear: {str(e)}"})
+
     return JsonResponse({"status": "error", "message": "Método no permitido"})
+
+def borrar_calificaciones(request, estudiante_id):
+    if request.method == 'POST':
+        estudiante = get_object_or_404(Estudiante, id=estudiante_id)
+        Calificacion.objects.filter(estudiante=estudiante).delete()
+        return JsonResponse({'success': True, 'message': 'Calificaciones borradas con éxito'})
+    return JsonResponse({'success': False, 'message': 'Método no permitido'})

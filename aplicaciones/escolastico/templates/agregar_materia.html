@@ -16,6 +16,7 @@
             <th>Nombre</th>
             <th>Código</th>
             <th>Docentes</th>
+            <th>Estudiantes</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -31,6 +32,11 @@
                 {% endfor %}
             </td>
             <td>
+                {% for estudiante in materia.estudiantes.all %}
+                    {{ estudiante.nombre }} {{ estudiante.apellido }}<br>
+                {% endfor %}
+            </td>
+            <td>
                 <button class="btn btn-warning btn-sm"
                         data-bs-toggle="modal"
                         data-bs-target="#materiaModal"
@@ -42,7 +48,7 @@
                 </button>
                 <form method="post" action="/eliminarMateria/{{ materia.id }}">
                     {% csrf_token %}
-                    <button class="btn btn-danger" type="submit" onclick="return confirm('SEGURO? UNA VEZ BORRADO NO HAY VUELTA ATRAS')">
+                    <button class="btn btn-danger" type="submit" onclick="return confirm('¿Seguro? Una vez borrado no hay vuelta atrás')">
                         Eliminar
                     </button>
                 </form>

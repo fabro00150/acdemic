@@ -1,40 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Control Académico{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- iziToast CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+        header {
+            background-color: #343a40;
+            padding: 1rem;
+        }
+        header nav a {
+            color: #ffffff;
+            margin-right: 1rem;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        header nav a:hover {
+            text-decoration: underline;
+        }
+        main {
+            padding: 2rem;
+        }
+        .card {
+            border: none;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #007bff;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .btn {
+            margin: 0.2rem 0;
+        }
+        footer {
+            background-color: #343a40;
+            color: #ffffff;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav>
+        <nav class="container d-flex justify-content-start">
+            <a href="/home/">Inicio</a>
             <a href="/agregar_docente/">Añadir Docente</a>
             <a href="/agregar_materia/">Añadir Materia</a>
-            <a href="/agregar_estudiante/">Añadir Estudiante</a>
+            <a href="/agregar_estudiante/">Añadir Estudiante</a>            
         </nav>
     </header>
-    <main>
+    <main class="container">
         {% block content %}
-        <h1>Materias</h1>
-        <ul>
+        <h1 class="text-primary mb-4">Materias</h1>
+        <div class="row">
             {% for materia in materias %}
-                <li>
-                    {{ materia.nombre }}
-                    <a href="/marcar_asistencia/{{ materia.id }}">Marcar Asistencia</a>
-                    <a href="/ingresar_calificaciones/{{ materia.id }}">Ingresar Calificaciones</a>
-                    <a href="/generar_reportes/{{ materia.id }}">Generar Reporte</a>
-                </li>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        {{ materia.nombre }}
+                    </div>
+                    <div class="card-body">
+                        <a href="/marcar_asistencia/{{ materia.id }}" class="btn btn-success w-100">Marcar Asistencia</a>
+                        <a href="/ingresar_calificaciones/{{ materia.id }}" class="btn btn-warning w-100">Ingresar Calificaciones</a>
+                        <a href="/generar_reportes/{{ materia.id }}" class="btn btn-info w-100">Generar Reporte</a>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
         {% endblock %}
     </main>
+    <footer>
+        <p>&copy; 2024 Control Académico. Todos los derechos reservados.</p>
+    </footer>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- iziToast JS -->
+    <script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
     <script>
         {% if messages %}
             {% for message in messages %}

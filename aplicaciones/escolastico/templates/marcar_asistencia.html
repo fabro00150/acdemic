@@ -1,20 +1,27 @@
 {% extends "home.html" %}
 
 {% block content %}
-<h1>Registrar Asistencia para {{ materia.nombre }}</h1>
-<form id="asistenciaForm" method="post">
-    {% csrf_token %}
-    Fecha: <input type="date" name="fecha" id="fecha" required><br>
-    <ul>
-        {% for estudiante in estudiantes %}
-            <li>
-                {{ estudiante.nombre }} {{ estudiante.apellido }}
-                <input type="checkbox" name="asistencia_{{ estudiante.id }}"> Presente
-            </li>
-        {% endfor %}
-    </ul>
-    <button type="submit">Registrar Asistencia</button>
-</form>
+<div class="container">
+    <h1 class="text-center">Registrar Asistencia para {{ materia.nombre }}</h1>
+    <form id="asistenciaForm" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="fecha">Fecha:</label>
+            <input type="date" name="fecha" id="fecha" required class="form-control">
+        </div>
+        <ul class="list-group">
+            {% for estudiante in estudiantes %}
+                <li class="list-group-item">
+                    {{ estudiante.nombre }} {{ estudiante.apellido }}
+                    <input type="checkbox" name="asistencia_{{ estudiante.id }}" class="form-check-input">
+                </li>
+            {% endfor %}
+        </ul>
+        <button type="submit" class="btn btn-primary btn-block">Registrar Asistencia</button>
+        <button type="button" class="btn btn-secondary btn-block" id="cancelar">Cancelar</button>
+    </form>
+    <div id="mensaje-carga" style="display: none;" class="alert alert-info">Cargando...</div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -42,7 +49,14 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Ocurrió un error inesperado.');
+            })
+            .finally(() => {
+                document.getElementById('mensaje-carga').style.display = 'none';
             });
+        });
+
+        document.getElementById('cancelar').addEventListener('click', function() {
+            form.reset(); // Reinicia el formulario
         });
     });
 </script>

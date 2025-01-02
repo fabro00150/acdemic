@@ -17,4 +17,7 @@ urlpatterns = [
     path("eliminar_docente/<int:docente_id>", views.eliminar_docente),
     path("eliminarEstudiante/<int:estudiante_id>", views.eliminarEstudiante),
     path("eliminarMateria/<int:materia_id>", views.eliminarMateria),
+    
+    path("editar_calificaciones/<int:estudiante_id> ", views.editar_calificaciones),    
+    path("borrar_calificaciones/<int:estudiante_id> ", views.borrar_calificaciones),    
 ]
