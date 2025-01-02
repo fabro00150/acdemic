@@ -1,46 +1,83 @@
 {% extends "home.html" %}
+{% load filters %}
+
 {% block content %}
-<h1>Ingresar Calificaciones para {{ materia.nombre }}</h1>
-<form id="calificacionForm" method="POST">
-    {% csrf_token %}
-    <ul>
-        {% for estudiante in estudiantes %}
-            <li>
-                {{ estudiante.nombre }} {{ estudiante.apellido }}
-                Nota: <input type="number" name="calificacion_{{ estudiante.id }}" step="0.01" min="0" max="10">
-            </li>
-        {% endfor %}
-    </ul>
-    <button type="submit">Guardar Calificaciones</button>
-</form>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Ingresar Calificaciones para {{ materia.nombre }}</h1>
+    <form id="calificacionForm" method="POST">
+        {% csrf_token %}
+        <table class="table table-striped table-bordered text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Estudiante</th>
+                    {% for parcial in parciales_rango %}
+                        <th>Parcial {{ parcial }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for estudiante in estudiantes %}
+                    <tr>
+                        <td class="fw-bold">{{ estudiante.nombre }} {{ estudiante.apellido }}</td>
+                        {% for parcial in parciales_rango %}
+                            <td class="d-flex flex-column align-items-center">
+                                <input type="number" 
+                                       class="form-control text-center mb-2"
+                                       name="calificacion_{{ estudiante.id }}_{{ parcial }}" 
+                                       value="{{ estudiante.calificaciones|get_item:parcial|default:'' }}" 
+                                       step="0.01" 
+                                       min="0" 
+                                       max="10"
+                                       placeholder="0.00">
+                                <small class="text-muted">
+                                    Nota Actual: {{ estudiante.calificaciones|get_item:parcial|default:"Sin Nota" }}
+                                </small>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+                Guardar Calificaciones
+            </button>
+        </div>
+    </form>
+</div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('calificacionForm');
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Evita la recarga de la página
+    document.getElementById('calificacionForm').addEventListener('submit', function(event) {
+        event.preventDefault();
 
-            const formData = new FormData(form); // Crea un objeto FormData con los datos del formulario
-            fetch(window.location.href, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest' // Identifica la solicitud como AJAX
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message); // Mensaje en caso de éxito
-                    form.reset(); // Reinicia el formulario
-                } else {
-                    alert('Ocurrió un error al registrar la calificación.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Ocurrió un error inesperado.');
-            });
+        const formData = new FormData(this);
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = "Guardando...";
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Ocurrió un error al registrar la calificación.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ocurrió un error inesperado.');
+        })
+        .finally(() => {
+            submitButton.disabled = false;
+            submitButton.textContent = "Guardar Calificaciones";
         });
     });
 </script>

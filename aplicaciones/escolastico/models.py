@@ -38,7 +38,8 @@ class Asistencia(models.Model):
 class Calificacion(models.Model):
     estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, related_name="calificaciones")
     materia = models.ForeignKey(Materia, on_delete=models.CASCADE, related_name="calificaciones")
+    parcial = models.PositiveIntegerField()  # Añadir el campo de parcial
     nota = models.DecimalField(max_digits=5, decimal_places=2)
 
     def __str__(self):
-        return f"{self.estudiante} - {self.materia}: {self.nota}"
+        return f"{self.estudiante} - {self.materia} - Parcial {self.parcial}: {self.nota}"

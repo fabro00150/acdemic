@@ -3,8 +3,5 @@ from django import template
 register = template.Library()
 
 @register.filter
-def get_index(value, index):
-    try:
-        return value[index]
-    except IndexError:
-        return None
+def get_item(dictionary, key):
+    return dictionary.get(key)

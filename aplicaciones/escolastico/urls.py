@@ -6,6 +6,7 @@ urlpatterns = [
     path('home/', views.home),
     path('marcar_asistencia/<int:materia_id>', views.marcar_asistencia),
     path('ingresar_calificaciones/<int:materia_id>', views.ingresar_calificaciones),
+    path('obtener_calificaciones/<int:estudiante_id>/<int:parcial>', views.obtener_calificaciones), 
     path('generar_reportes/<int:materia_id>', views.generar_reportes),
     
     path("agregar_docente/", views.agregar_docente),
@@ -18,6 +19,7 @@ urlpatterns = [
     path("eliminarEstudiante/<int:estudiante_id>", views.eliminarEstudiante),
     path("eliminarMateria/<int:materia_id>", views.eliminarMateria),
     
-    path("editar_calificaciones/<int:estudiante_id> ", views.editar_calificaciones),    
+    
+      
     path("borrar_calificaciones/<int:estudiante_id> ", views.borrar_calificaciones),    
 ]

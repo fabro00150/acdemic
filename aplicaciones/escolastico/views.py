@@ -41,47 +41,40 @@ def ingresar_calificaciones(request, materia_id):
     materia = get_object_or_404(Materia, id=materia_id)
     estudiantes = materia.estudiantes.all()
 
+    estudiantes_calificaciones = []
+    for estudiante in estudiantes:
+        calificaciones = Calificacion.objects.filter(estudiante=estudiante, materia=materia).order_by('parcial')
+        calificaciones_dict = {calificacion.parcial: calificacion.nota for calificacion in calificaciones}
+        estudiantes_calificaciones.append({
+            'id': estudiante.id,
+            'nombre': estudiante.nombre,
+            'apellido': estudiante.apellido,
+            'calificaciones': calificaciones_dict,
+        })
+
     if request.method == 'POST':
         for estudiante in estudiantes:
-            nota = request.POST.get(f'calificacion_{estudiante.id}')
-            if nota:
-                Calificacion.objects.update_or_create(
-                    estudiante=estudiante,
-                    materia=materia,
-                    defaults={'nota': nota}
-                )
+            for parcial in range(1, 4):  # Se asume hasta 3 parciales
+                nota = request.POST.get(f'calificacion_{estudiante.id}_{parcial}')
+                if nota:
+                    Calificacion.objects.update_or_create(
+                        estudiante=estudiante,
+                        materia=materia,
+                        parcial=parcial,
+                        defaults={'nota': float(nota)}
+                    )
         return JsonResponse({'success': True, 'message': 'Calificaciones registradas con éxito'})
 
-    return render(request, 'ingresar_calificaciones.html', {'materia': materia, 'estudiantes': estudiantes})
+    return render(request, 'ingresar_calificaciones.html', {
+        'materia': materia,
+        'estudiantes': estudiantes_calificaciones,
+        'parciales_rango': range(1, 4),
+    })
 
-
-#EDITAR CALIFICACIONES
-def editar_calificaciones(request):
-    if request.method == 'POST':
-        calificacion_id = request.POST.get('calificacion_id')
-        if not calificacion_id:
-            return JsonResponse({'success': False, 'message': 'ID de calificación no recibido.'})
-        nueva_nota = request.POST.get('nueva_nota')
-
-        try:
-            # Validar que la nota sea un número válido
-            nueva_nota = float(nueva_nota)
-            if not (0 <= nueva_nota <= 10):
-                return JsonResponse({'success': False, 'message': 'La nota debe estar entre 0 y 10.'})
-            
-            # Actualizar la calificación
-            calificacion = Calificacion.objects.get(id=calificacion_id)
-            calificacion.nota = nueva_nota
-            calificacion.save()
-            return JsonResponse({'success': True, 'message': 'Calificación actualizada correctamente.'})
-        except Calificacion.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Calificación no encontrada.'})
-        except ValueError:
-            return JsonResponse({'success': False, 'message': 'La nota proporcionada no es válida.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': f'Error inesperado: {str(e)}'})
-
-    return JsonResponse({'success': False, 'message': 'Método no permitido.'})
+def obtener_calificaciones(request, estudiante_id, parcial):
+    calificaciones = Calificacion.objects.filter(estudiante_id=estudiante_id, parcial=parcial).values_list('nota', flat=True)
+    notas = list(calificaciones) + [0] * (5 - len(calificaciones))  # Rellenar con ceros si hay menos de 5 notas
+    return JsonResponse({'notas': notas})
 
 #REPORTES DE MATERIA
 def generar_reportes(request, materia_id):
