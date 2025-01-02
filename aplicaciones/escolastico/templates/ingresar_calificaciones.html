@@ -11,7 +11,7 @@
                 <tr>
                     <th>Estudiante</th>
                     {% for parcial in parciales_rango %}
-                        <th>Parcial {{ parcial }}</th>
+                        <th>Nota Parcial {{ parcial }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -20,18 +20,15 @@
                     <tr>
                         <td class="fw-bold">{{ estudiante.nombre }} {{ estudiante.apellido }}</td>
                         {% for parcial in parciales_rango %}
-                            <td class="d-flex flex-column align-items-center">
+                            <td>
                                 <input type="number" 
-                                       class="form-control text-center mb-2"
+                                       class="form-control text-center"
                                        name="calificacion_{{ estudiante.id }}_{{ parcial }}" 
                                        value="{{ estudiante.calificaciones|get_item:parcial|default:'' }}" 
                                        step="0.01" 
                                        min="0" 
                                        max="10"
-                                       placeholder="0.00">
-                                <small class="text-muted">
-                                    Nota Actual: {{ estudiante.calificaciones|get_item:parcial|default:"Sin Nota" }}
-                                </small>
+                                       placeholder="0.00">Nota Actual: <b>{{ estudiante.calificaciones|get_item:parcial|default:"Sin Nota" }}
                             </td>
                         {% endfor %}
                     </tr>
