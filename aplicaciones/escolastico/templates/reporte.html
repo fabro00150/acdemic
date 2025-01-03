@@ -1,0 +1,78 @@
+{% extends "home.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">REPORTE DE CALIFICACIONES</h1>
+    <h3 class="text-center">REGIMEN DE TRES CALIFICACIONES</h3>
+    <h4 class="text-center">CIENCIAS DE LA INGENIERÍA Y APLICADAS</h4>
+
+    <div class="card mb-4">
+        <div class="card-header text-center">
+            <h5 class="card-title">ALUMNO: {{ estudiante.nombre }} {{ estudiante.apellido }} [{{ estudiante.matricula }}]</h5>
+            <h6>CARRERA: SISTEMAS DE INFORMACION</h6>
+            <h6>PERIODO: OCTUBRE_2024-MARZO_2025</h6>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>CODIGO</th>
+                        <th>MATERIA</th>
+                        <th>N1</th>
+                        <th>NR1</th>
+                        <th>N2</th>
+                        <th>NR2</th>
+                        <th>N3</th>
+                        <th>NR3</th>
+                        <th>REC</th>
+                        <th>NF</th>
+                        <th>TF</th>
+                        <th>%A</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for materia in materias %}
+                    <tr>
+                        <td>{{ materia.codigo }}</td>
+                        <td>{{ materia.materia }}</td>
+                        {% for calificacion in materia.calificaciones %}
+                        <td>{% if calificacion %}{{ calificacion.nota }}{% endif %}</td>
+                        <td>{% if calificacion and calificacion.nota == 0 %}NR{% elif calificacion %}N{% endif %}</td>
+                        {% endfor %}
+                        <td>0.00</td> <!-- REC column, assuming no recovery -->
+                        <td>{{ materia.promedio|default:"0.00" }}</td>
+                        <td>{{ materia.total_faltas }}</td>
+                        <td>{{ materia.porcentaje_asistencia }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h5 class="mt-4">RESUMEN DE PROMEDIOS:</h5>
+            <table class="table table-bordered text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>NIVEL</th>
+                        <th>NUM_MATE</th>
+                        <th>SUMA</th>
+                        <th>PROM</th>
+                        <th>REFERENCIA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>7</td>
+                        <td>{{ materias|length }}/{{ materias|length }}</td>
+                        <td>{{ suma_promedios }}</td>
+                        <td>{{ promedio_general }}</td>
+                        <td>CURSA</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="text-center">
+        <a href="/agregar_estudiante/" class="btn btn-primary">Volver</a>
+    </div>
+</div>
+{% endblock %}

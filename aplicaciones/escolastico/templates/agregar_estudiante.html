@@ -49,6 +49,8 @@
                         Eliminar
                     </button>
                 </form>
+                <button class="btn btn-secondary" onclick="location.href='/generar_reporte_estudiante/{{ estudiante.id }}'">Generar Reporte</button>
+
             </td>
         </tr>
         {% endfor %}
@@ -87,7 +89,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" id="save-changes" class="btn btn-primary">Guardar cambios</button>
+                <button type="button" id="save-changes" class="btn btn-primary">Guardar cambios</button>                
             </div>
         </div>
     </div>

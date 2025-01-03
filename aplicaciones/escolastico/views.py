@@ -3,6 +3,7 @@ from .models import Materia, Estudiante, Asistencia, Calificacion,Docente
 from django.contrib import messages
 from django.http import JsonResponse
 
+
 def inicio(request):
     """Página inicial que muestra las materias disponibles."""
     materias = Materia.objects.all()
@@ -132,11 +133,6 @@ def agregar_docente(request):
 
     return render(request, "agregar_docente.html", {"docentes": docentes, "materias": materias})
 
-def dcnts(request):    
-    docentes = Docente.objects.all()
-    return render(request, "agregar_docentes", {"docentes": docentes})
-
-
 def eliminar_docente(request, docente_id):
     docentes = Docente.objects.all()
     materias = Materia.objects.all()
@@ -144,7 +140,6 @@ def eliminar_docente(request, docente_id):
     docente.delete()
     messages.success(request, "Docente eliminado correctamente.")
     return render(request,"agregar_docente.html", {"docentes": docentes, "materias": materias})
-
 
 def eliminarEstudiante(request, estudiante_id):
     estudiante = get_object_or_404(Estudiante, id=estudiante_id)
@@ -157,7 +152,6 @@ def eliminarMateria(request, materia_id):
     materia.delete()
     messages.success(request, "materia eliminado correctamente.")
     return redirect("home")
-
 
 # Agregar materia
 def agregar_materia(request):
@@ -302,3 +296,46 @@ def borrar_calificaciones(request, estudiante_id):
         Calificacion.objects.filter(estudiante=estudiante).delete()
         return JsonResponse({'success': True, 'message': 'Calificaciones borradas con éxito'})
     return JsonResponse({'success': False, 'message': 'Método no permitido'})
+
+from django.db.models import Avg
+def generar_reporte_estudiante(request, estudiante_id):
+    estudiante = get_object_or_404(Estudiante, id=estudiante_id)
+    materias = estudiante.materias.all()
+    asistencias = Asistencia.objects.filter(estudiante=estudiante)
+    calificaciones = Calificacion.objects.filter(estudiante=estudiante).order_by('materia', 'parcial')
+
+    datos_materias = []
+    suma_promedios = 0
+    total_materias = materias.count()
+
+    for materia in materias:
+        calificaciones_materia = calificaciones.filter(materia=materia)
+        promedio = calificaciones_materia.aggregate(promedio=Avg('nota'))['promedio'] or 0
+        suma_promedios += promedio
+        total_faltas = asistencias.filter(materia=materia, presente=False).count()
+        porcentaje_asistencia = 100 * asistencias.filter(materia=materia, presente=True).count() / asistencias.filter(materia=materia).count() if asistencias.filter(materia=materia).count() > 0 else 0
+        
+        # Completar con celdas vacías
+        calificaciones_list = list(calificaciones_materia)
+        while len(calificaciones_list) < 3:
+            calificaciones_list.append(None)
+        
+        datos_materias.append({
+            'codigo': materia.codigo,
+            'materia': materia.nombre,
+            'calificaciones': calificaciones_list,
+            'promedio': promedio,
+            'total_faltas': total_faltas,
+            'porcentaje_asistencia': porcentaje_asistencia
+        })
+
+    promedio_general = suma_promedios / total_materias if total_materias > 0 else 0
+
+    context = {
+        'estudiante': estudiante,
+        'materias': datos_materias,
+        'asistencias': asistencias,
+        'suma_promedios': suma_promedios,
+        'promedio_general': promedio_general,
+    }
+    return render(request, 'reporte.html', context)

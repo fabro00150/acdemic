@@ -21,5 +21,6 @@ urlpatterns = [
     
     
       
-    path("borrar_calificaciones/<int:estudiante_id> ", views.borrar_calificaciones),    
+    path("borrar_calificaciones/<int:estudiante_id>", views.borrar_calificaciones),    
+    path('generar_reporte_estudiante/<int:estudiante_id>', views.generar_reporte_estudiante)
 ]
