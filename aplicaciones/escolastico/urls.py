@@ -10,7 +10,6 @@ urlpatterns = [
     path('generar_reportes/<int:materia_id>', views.generar_reportes),
     
     path("agregar_docente/", views.agregar_docente),
-    path("dcnts/", views.dcnts, name='dcnts'),
     path("agregar_materia/", views.agregar_materia),
     path("agregar_editar_materia/", views.agregar_editar_materia),
     path("agregar_estudiante/", views.agregar_estudiante),
